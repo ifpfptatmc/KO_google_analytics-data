@@ -2,7 +2,7 @@ name: Fetch and Update Analytics Data
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Запуск ежедневно в полночь
+    - cron: '0 0 * * *'  # Every day at midnight
   workflow_dispatch:
 
 jobs:
@@ -21,12 +21,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib
+        pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
 
     - name: Run fetch analytics data script
       run: python fetch_analytics_data.py
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        VIEW_ID: ${{ secrets.VIEW_ID }}
 
     - name: Commit and push changes
       run: |
