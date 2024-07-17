@@ -34,7 +34,12 @@ jobs:
       shell: bash
 
     - name: Check contents of CSV file
-      run: cat analytics_data.csv
+      run: |
+        if [ -f analytics_data.csv ]; then
+          cat analytics_data.csv
+        else
+          echo "CSV file not found!"
+        fi
       shell: bash
 
     - name: Commit and push changes
