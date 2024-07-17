@@ -8,7 +8,7 @@ from datetime import datetime
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-VIEW_ID = '8269456592'
+VIEW_ID = 'G-LCRR9PBEPJ'
 
 def initialize_analyticsreporting():
     credentials_info = json.loads(KEY_FILE_CONTENT)
@@ -29,23 +29,34 @@ def get_report(analytics):
         }
     ).execute()
 
-def save_to_csv(response):
-    with open('analytics_data.csv', mode='w') as file:
-        writer = csv.writer(file)
-        writer.writerow(['Date', 'Users', 'New Users', 'Avg Session Duration'])
+def print_response(response):
+    with open('analytics_data.csv', 'w', newline='') as csvfile:
+        fieldnames = ['Date', 'Users', 'New Users', 'Avg Session Duration']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
         
         for report in response.get('reports', []):
+            column_header = report.get('columnHeader', {})
+            metric_headers = column_header.get('metricHeader', {}).get('metricHeaderEntries', [])
             rows = report.get('data', {}).get('rows', [])
+            
             for row in rows:
-                dimensions = row.get('dimensions', [])
-                date = datetime.strptime(dimensions[0], '%Y%m%d').strftime('%Y-%m-%d')
-                metrics = row.get('metrics', [])[0].get('values', [])
-                writer.writerow([date] + metrics)
+                date_range_values = row.get('metrics', [])
+                date = row.get('dimensions', [])[0]
+                
+                for i, values in enumerate(date_range_values):
+                    data = {
+                        'Date': date,
+                        'Users': values.get('values', [])[0],
+                        'New Users': values.get('values', [])[1],
+                        'Avg Session Duration': values.get('values', [])[2]
+                    }
+                    writer.writerow(data)
 
 def main():
     analytics = initialize_analyticsreporting()
     response = get_report(analytics)
-    save_to_csv(response)
+    print_response(response)
 
 if __name__ == '__main__':
     main()
