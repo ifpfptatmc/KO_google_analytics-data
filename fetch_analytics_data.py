@@ -8,7 +8,7 @@ from datetime import datetime
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-VIEW_ID = 'YOUR_VIEW_ID'
+VIEW_ID = 'G-LCRR9PBEPJ'
 
 def initialize_analyticsreporting():
     credentials_info = json.loads(KEY_FILE_CONTENT)
