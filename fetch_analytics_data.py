@@ -8,7 +8,7 @@ from datetime import datetime
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-VIEW_ID = 'G-LCRR9PBEPJ'
+VIEW_ID = os.getenv('VIEW_ID')
 
 def initialize_analyticsreporting():
     credentials_info = json.loads(KEY_FILE_CONTENT)
@@ -20,43 +20,46 @@ def get_report(analytics):
     return analytics.reports().batchGet(
         body={
             'reportRequests': [
-                {
-                    'viewId': VIEW_ID,
-                    'dateRanges': [{'startDate': '30daysAgo', 'endDate': 'today'}],
-                    'metrics': [{'expression': 'ga:users'}, {'expression': 'ga:newUsers'}, {'expression': 'ga:avgSessionDuration'}],
-                    'dimensions': [{'name': 'ga:date'}]
-                }]
+            {
+                'viewId': VIEW_ID,
+                'dateRanges': [{'startDate': '30daysAgo', 'endDate': 'today'}],
+                'metrics': [{'expression': 'ga:users'}, {'expression': 'ga:newUsers'}, {'expression': 'ga:avgSessionDuration'}],
+                'dimensions': [{'name': 'ga:date'}]
+            }]
         }
     ).execute()
 
-def print_response(response):
-    with open('analytics_data.csv', 'w', newline='') as csvfile:
-        fieldnames = ['Date', 'Users', 'New Users', 'Avg Session Duration']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        
-        for report in response.get('reports', []):
-            column_header = report.get('columnHeader', {})
-            metric_headers = column_header.get('metricHeader', {}).get('metricHeaderEntries', [])
-            rows = report.get('data', {}).get('rows', [])
-            
-            for row in rows:
-                date_range_values = row.get('metrics', [])
-                date = row.get('dimensions', [])[0]
-                
-                for i, values in enumerate(date_range_values):
-                    data = {
-                        'Date': date,
-                        'Users': values.get('values', [])[0],
-                        'New Users': values.get('values', [])[1],
-                        'Avg Session Duration': values.get('values', [])[2]
-                    }
-                    writer.writerow(data)
-
-def main():
+def fetch_analytics_data():
     analytics = initialize_analyticsreporting()
     response = get_report(analytics)
-    print_response(response)
+    return response
+
+def write_to_csv(data):
+    with open('analytics_data.csv', 'w', newline='') as csvfile:
+        fieldnames = ['Date', 'Users', 'New Users', 'Average Session Duration']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for report in data.get('reports', []):
+            rows = report.get('data', {}).get('rows', [])
+            for row in rows:
+                date = row.get('dimensions', [])[0]
+                metrics = row.get('metrics', [])[0].get('values', [])
+                writer.writerow({
+                    'Date': date,
+                    'Users': metrics[0],
+                    'New Users': metrics[1],
+                    'Average Session Duration': metrics[2]
+                })
+
+def main():
+    try:
+        data = fetch_analytics_data()
+        write_to_csv(data)
+        print('Data fetched and written to analytics_data.csv')
+    except Exception as e:
+        print(f'Error occurred: {e}')
 
 if __name__ == '__main__':
+    print(f"Using VIEW_ID: {VIEW_ID}")
+    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:100]}... (truncated for security)")
     main()
