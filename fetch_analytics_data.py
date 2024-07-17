@@ -1,52 +1,51 @@
 import os
 import json
+import requests
 import csv
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from datetime import datetime
 
-# Получение содержимого JSON ключа из переменной окружения
-keyfile_dict = json.loads(os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON'))
-
-# Создание учетных данных из JSON ключа
-credentials = service_account.Credentials.from_service_account_info(
-    keyfile_dict,
-    scopes=['https://www.googleapis.com/auth/analytics.readonly']
-)
-
-# ID представления Google Analytics
+SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
+KEY_FILE_LOCATION = 'path_to_your_service_account_key.json'
 VIEW_ID = 'YOUR_VIEW_ID'
 
-# Создание клиента API
-analytics = build('analyticsreporting', 'v4', credentials=credentials)
+def initialize_analyticsreporting():
+    credentials = service_account.Credentials.from_service_account_file(
+        KEY_FILE_LOCATION, scopes=SCOPES)
+    analytics = build('analyticsreporting', 'v4', credentials=credentials)
+    return analytics
 
-# Запрос данных
-response = analytics.reports().batchGet(
-    body={
-        'reportRequests': [
-            {
-                'viewId': VIEW_ID,
-                'dateRanges': [{'startDate': '30daysAgo', 'endDate': 'today'}],
-                'metrics': [
-                    {'expression': 'ga:users'},
-                    {'expression': 'ga:newUsers'},
-                    {'expression': 'ga:avgSessionDuration'}
-                ],
-                'dimensions': [{'name': 'ga:date'}]
-            }
-        ]
-    }
-).execute()
+def get_report(analytics):
+    return analytics.reports().batchGet(
+        body={
+            'reportRequests': [
+                {
+                    'viewId': VIEW_ID,
+                    'dateRanges': [{'startDate': '30daysAgo', 'endDate': 'today'}],
+                    'metrics': [{'expression': 'ga:users'}, {'expression': 'ga:newUsers'}, {'expression': 'ga:avgSessionDuration'}],
+                    'dimensions': [{'name': 'ga:date'}]
+                }]
+        }
+    ).execute()
 
-# Обработка ответа и сохранение в CSV
-report = response.get('reports', [])[0]
-header = [h['name'] for h in report['columnHeader']['dimensions']] + \
-         [h['name'] for h in report['columnHeader']['metricHeader']['metricHeaderEntries']]
-rows = [[d for d in row['dimensions']] + [m for m in row['metrics'][0]['values']] for row in report['data']['rows']]
+def save_to_csv(response):
+    with open('analytics_data.csv', mode='w') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Date', 'Users', 'New Users', 'Avg Session Duration'])
+        
+        for report in response.get('reports', []):
+            rows = report.get('data', {}).get('rows', [])
+            for row in rows:
+                dimensions = row.get('dimensions', [])
+                date = datetime.strptime(dimensions[0], '%Y%m%d').strftime('%Y-%m-%d')
+                metrics = row.get('metrics', [])[0].get('values', [])
+                writer.writerow([date] + metrics)
 
-with open('analytics_data.csv', 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(header)
-    writer.writerows(rows)
+def main():
+    analytics = initialize_analyticsreporting()
+    response = get_report(analytics)
+    save_to_csv(response)
 
-print('Данные успешно сохранены в analytics_data.csv')
+if __name__ == '__main__':
+    main()
