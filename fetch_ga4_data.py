@@ -1,40 +1,51 @@
 import os
 import json
+import requests
+from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
-from google.analytics.data_v1beta.types import DateRange, Metric, Dimension, RunReportRequest
+from google.analytics.data_v1beta.types import RunReportRequest
 
-# Замените ваш JSON ключ на соответствующую строку
-key_file_content = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+# Property ID
+PROPERTY_ID = "446474801"
 
-credentials_info = json.loads(key_file_content)
-client = BetaAnalyticsDataClient.from_service_account_info(credentials_info)
+# Path to your service account key file
+KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
-property_id = 'YOUR_PROPERTY_ID'  # Замените YOUR_PROPERTY_ID на ваш Идентификатор потока данных
+# Initialize the Analytics Data API client
+def initialize_analyticsdata():
+    credentials_info = json.loads(KEY_FILE_CONTENT)
+    credentials = service_account.Credentials.from_service_account_info(credentials_info)
+    client = BetaAnalyticsDataClient(credentials=credentials)
+    return client
 
-request = RunReportRequest(
-    property=f"properties/{property_id}",
-    dimensions=[Dimension(name="country"), Dimension(name="city")],
-    metrics=[Metric(name="activeUsers")],
-    date_ranges=[DateRange(start_date="2023-01-01", end_date="2023-12-31")],
-)
+# Get a report from the Analytics Data API
+def get_report(client):
+    request = RunReportRequest(
+        property=f"properties/{PROPERTY_ID}",
+        dimensions=[{"name": "date"}],
+        metrics=[{"name": "activeUsers"}],
+        date_ranges=[{"start_date": "2023-01-01", "end_date": "2023-12-31"}]
+    )
+    response = client.run_report(request)
+    return response
 
-response = client.run_report(request)
+# Save the report data to a CSV file
+def save_to_csv(response):
+    with open('analytics_data.csv', 'w') as file:
+        file.write('date,activeUsers\n')
+        for row in response.rows:
+            date = row.dimension_values[0].value
+            active_users = row.metric_values[0].value
+            file.write(f"{date},{active_users}\n")
 
-print("Report result:")
-for row in response.rows:
-    print(row.dimension_values, row.metric_values)
+# Main function
+def main():
+    print(f"Using PROPERTY_ID: {PROPERTY_ID}")
+    client = initialize_analyticsdata()
+    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
+    response = get_report(client)
+    save_to_csv(response)
+    print("Data fetched and saved to analytics_data.csv successfully.")
 
-# Сохранение результатов в CSV файл
-import csv
-
-with open('ga4_data.csv', 'w', newline='') as csvfile:
-    fieldnames = ['country', 'city', 'activeUsers']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    writer.writeheader()
-    
-    for row in response.rows:
-        writer.writerow({
-            'country': row.dimension_values[0].value,
-            'city': row.dimension_values[1].value,
-            'activeUsers': row.metric_values[0].value
-        })
+if __name__ == "__main__":
+    main()
