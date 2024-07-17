@@ -11,10 +11,15 @@ KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 VIEW_ID = os.getenv('VIEW_ID')
 
 def initialize_analyticsreporting():
-    credentials_info = json.loads(KEY_FILE_CONTENT)
-    credentials = service_account.Credentials.from_service_account_info(credentials_info, scopes=SCOPES)
-    analytics = build('analyticsreporting', 'v4', credentials=credentials)
-    return analytics
+    try:
+        credentials_info = json.loads(KEY_FILE_CONTENT)
+        credentials = service_account.Credentials.from_service_account_info(credentials_info, scopes=SCOPES)
+        analytics = build('analyticsreporting', 'v4', credentials=credentials)
+        print("Initialized Analytics Reporting API client successfully.")
+        return analytics
+    except Exception as e:
+        print(f"Error initializing Analytics Reporting API client: {e}")
+        raise
 
 def get_report(analytics):
     try:
@@ -33,10 +38,11 @@ def get_report(analytics):
         return report
     except Exception as e:
         print(f"Error fetching report: {e}")
-        return None
+        raise
 
 def write_to_csv(data):
     try:
+        print("Writing data to CSV.")
         with open('analytics_data.csv', 'w', newline='') as csvfile:
             fieldnames = ['Date', 'Users', 'New Users', 'Average Session Duration']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -55,6 +61,7 @@ def write_to_csv(data):
         print('Data written to analytics_data.csv successfully.')
     except Exception as e:
         print(f'Error writing to CSV: {e}')
+        raise
 
 def main():
     try:
@@ -69,8 +76,13 @@ def main():
         print('Process completed.')
     except Exception as e:
         print(f'Error occurred: {e}')
+        raise
 
 if __name__ == '__main__':
-    print(f"Using VIEW_ID: {VIEW_ID}")
-    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:100]}... (truncated for security)")
-    main()
+    try:
+        print(f"Using VIEW_ID: {VIEW_ID}")
+        print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:100]}... (truncated for security)")
+        main()
+    except Exception as e:
+        print(f"Initialization failed: {e}")
+        raise
