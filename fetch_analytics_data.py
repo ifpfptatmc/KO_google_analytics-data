@@ -60,6 +60,10 @@ def write_to_csv(data):
 def main():
     try:
         data = fetch_analytics_data()
+        if data:
+            print("Data fetched successfully.")
+        else:
+            print("No data fetched.")
         write_to_csv(data)
         print('Data fetched and written to analytics_data.csv')
     except Exception as e:
