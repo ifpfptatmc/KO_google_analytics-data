@@ -17,24 +17,23 @@ def initialize_analyticsreporting():
     return analytics
 
 def get_report(analytics):
-    return analytics.reports().batchGet(
-        body={
-            'reportRequests': [
-            {
-                'viewId': VIEW_ID,
-                'dateRanges': [{'startDate': '30daysAgo', 'endDate': 'today'}],
-                'metrics': [{'expression': 'ga:users'}, {'expression': 'ga:newUsers'}, {'expression': 'ga:avgSessionDuration'}],
-                'dimensions': [{'name': 'ga:date'}]
-            }]
-        }
-    ).execute()
-
-def fetch_analytics_data():
-    analytics = initialize_analyticsreporting()
-    response = get_report(analytics)
-    print("Fetched analytics data:")
-    print(json.dumps(response, indent=2))
-    return response
+    try:
+        report = analytics.reports().batchGet(
+            body={
+                'reportRequests': [
+                {
+                    'viewId': VIEW_ID,
+                    'dateRanges': [{'startDate': '30daysAgo', 'endDate': 'today'}],
+                    'metrics': [{'expression': 'ga:users'}, {'expression': 'ga:newUsers'}, {'expression': 'ga:avgSessionDuration'}],
+                    'dimensions': [{'name': 'ga:date'}]
+                }]
+            }
+        ).execute()
+        print("Report fetched successfully.")
+        return report
+    except Exception as e:
+        print(f"Error fetching report: {e}")
+        return None
 
 def write_to_csv(data):
     try:
@@ -53,20 +52,21 @@ def write_to_csv(data):
                         'New Users': metrics[1],
                         'Average Session Duration': metrics[2]
                     })
-        print('Data written to analytics_data.csv')
+        print('Data written to analytics_data.csv successfully.')
     except Exception as e:
         print(f'Error writing to CSV: {e}')
 
 def main():
     try:
         print(f"Starting data fetch for VIEW_ID: {VIEW_ID}")
-        data = fetch_analytics_data()
+        analytics = initialize_analyticsreporting()
+        data = get_report(analytics)
         if data:
             print("Data fetched successfully.")
             write_to_csv(data)
         else:
             print("No data fetched.")
-        print('Data fetched and written to analytics_data.csv')
+        print('Process completed.')
     except Exception as e:
         print(f'Error occurred: {e}')
 
