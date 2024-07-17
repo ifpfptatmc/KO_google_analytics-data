@@ -1,16 +1,9 @@
-name: Fetch and Update GA4 Data
+name: Fetch and Update Analytics Data
 
 on:
   workflow_dispatch:
-    inputs:
-      start_date:
-        description: 'Start date for the report'
-        required: true
-        default: '2023-01-01'
-      end_date:
-        description: 'End date for the report'
-        required: true
-        default: '2023-12-31'
+  schedule:
+    - cron: '0 0 * * *' # This will run the workflow every day at midnight UTC
 
 jobs:
   fetch-data:
@@ -30,17 +23,23 @@ jobs:
         python -m pip install --upgrade pip
         pip install google-analytics-data
 
-    - name: Run fetch GA4 data script
-      run: python fetch_ga4_data.py
+    - name: Run fetch analytics data script
+      run: python fetch_analytics_data.py
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+    - name: List files for debugging
+      run: ls -la
+
+    - name: Check contents of CSV file
+      run: cat analytics_data.csv
 
     - name: Commit and push changes
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add ga4_data.csv
-        git commit -m 'Updated GA4 data'
+        git add analytics_data.csv
+        git commit -m 'Updated analytics data'
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
