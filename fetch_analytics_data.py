@@ -32,6 +32,8 @@ def get_report(analytics):
 def fetch_analytics_data():
     analytics = initialize_analyticsreporting()
     response = get_report(analytics)
+    print("Fetched analytics data")
+    print(response)
     return response
 
 def write_to_csv(data):
