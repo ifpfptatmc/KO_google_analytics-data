@@ -29,6 +29,14 @@ jobs:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         VIEW_ID: ${{ secrets.VIEW_ID }}
 
+    - name: List files for debugging
+      run: ls -la
+      shell: bash
+
+    - name: Check contents of CSV file
+      run: cat analytics_data.csv
+      shell: bash
+
     - name: Commit and push changes
       run: |
         git config --global user.name 'github-actions[bot]'
