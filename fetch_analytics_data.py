@@ -7,12 +7,12 @@ from googleapiclient.discovery import build
 from datetime import datetime
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
-KEY_FILE_LOCATION = 'path_to_your_service_account_key.json'
+KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 VIEW_ID = 'YOUR_VIEW_ID'
 
 def initialize_analyticsreporting():
-    credentials = service_account.Credentials.from_service_account_file(
-        KEY_FILE_LOCATION, scopes=SCOPES)
+    credentials_info = json.loads(KEY_FILE_CONTENT)
+    credentials = service_account.Credentials.from_service_account_info(credentials_info, scopes=SCOPES)
     analytics = build('analyticsreporting', 'v4', credentials=credentials)
     return analytics
 
