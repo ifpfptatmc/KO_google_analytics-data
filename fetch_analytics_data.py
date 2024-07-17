@@ -59,12 +59,13 @@ def write_to_csv(data):
 
 def main():
     try:
+        print(f"Starting data fetch for VIEW_ID: {VIEW_ID}")
         data = fetch_analytics_data()
         if data:
             print("Data fetched successfully.")
+            write_to_csv(data)
         else:
             print("No data fetched.")
-        write_to_csv(data)
         print('Data fetched and written to analytics_data.csv')
     except Exception as e:
         print(f'Error occurred: {e}')
