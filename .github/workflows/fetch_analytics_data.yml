@@ -1,69 +1,41 @@
-import os
-import json
-import requests
-import csv
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from datetime import datetime
+name: Fetch and Update Analytics Data
 
-SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
-KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-VIEW_ID = os.getenv('VIEW_ID')
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Every day at midnight
+  workflow_dispatch:
 
-def initialize_analyticsreporting():
-    credentials_info = json.loads(KEY_FILE_CONTENT)
-    credentials = service_account.Credentials.from_service_account_info(credentials_info, scopes=SCOPES)
-    analytics = build('analyticsreporting', 'v4', credentials=credentials)
-    return analytics
+jobs:
+  fetch-data:
+    runs-on: ubuntu-latest
 
-def get_report(analytics):
-    return analytics.reports().batchGet(
-        body={
-            'reportRequests': [
-            {
-                'viewId': VIEW_ID,
-                'dateRanges': [{'startDate': '30daysAgo', 'endDate': 'today'}],
-                'metrics': [{'expression': 'ga:users'}, {'expression': 'ga:newUsers'}, {'expression': 'ga:avgSessionDuration'}],
-                'dimensions': [{'name': 'ga:date'}]
-            }]
-        }
-    ).execute()
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-def fetch_analytics_data():
-    analytics = initialize_analyticsreporting()
-    response = get_report(analytics)
-    return response
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
 
-def write_to_csv(data):
-    try:
-        with open('analytics_data.csv', 'w', newline='') as csvfile:
-            fieldnames = ['Date', 'Users', 'New Users', 'Average Session Duration']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            for report in data.get('reports', []):
-                rows = report.get('data', {}).get('rows', [])
-                for row in rows:
-                    date = row.get('dimensions', [])[0]
-                    metrics = row.get('metrics', [])[0].get('values', [])
-                    writer.writerow({
-                        'Date': date,
-                        'Users': metrics[0],
-                        'New Users': metrics[1],
-                        'Average Session Duration': metrics[2]
-                    })
-        print('Data written to analytics_data.csv')
-    except Exception as e:
-        print(f'Error writing to CSV: {e}')
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
 
-def main():
-    try:
-        data = fetch_analytics_data()
-        write_to_csv(data)
-        print('Data fetched and written to analytics_data.csv')
-    except Exception as e:
-        print(f'Error occurred: {e}')
+    - name: Run fetch analytics data script
+      run: python fetch_analytics_data.py
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        VIEW_ID: ${{ secrets.VIEW_ID }}
 
-if __name__ == '__main__':
-    print(f"Using VIEW_ID: {VIEW_ID}")
-    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:100]}... (truncated for security)")
-    main()
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add analytics_data.csv
+        git commit -m 'Updated analytics data'
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
