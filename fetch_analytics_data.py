@@ -35,21 +35,25 @@ def fetch_analytics_data():
     return response
 
 def write_to_csv(data):
-    with open('analytics_data.csv', 'w', newline='') as csvfile:
-        fieldnames = ['Date', 'Users', 'New Users', 'Average Session Duration']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for report in data.get('reports', []):
-            rows = report.get('data', {}).get('rows', [])
-            for row in rows:
-                date = row.get('dimensions', [])[0]
-                metrics = row.get('metrics', [])[0].get('values', [])
-                writer.writerow({
-                    'Date': date,
-                    'Users': metrics[0],
-                    'New Users': metrics[1],
-                    'Average Session Duration': metrics[2]
-                })
+    try:
+        with open('analytics_data.csv', 'w', newline='') as csvfile:
+            fieldnames = ['Date', 'Users', 'New Users', 'Average Session Duration']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for report in data.get('reports', []):
+                rows = report.get('data', {}).get('rows', [])
+                for row in rows:
+                    date = row.get('dimensions', [])[0]
+                    metrics = row.get('metrics', [])[0].get('values', [])
+                    writer.writerow({
+                        'Date': date,
+                        'Users': metrics[0],
+                        'New Users': metrics[1],
+                        'Average Session Duration': metrics[2]
+                    })
+        print('Data written to analytics_data.csv')
+    except Exception as e:
+        print(f'Error writing to CSV: {e}')
 
 def main():
     try:
