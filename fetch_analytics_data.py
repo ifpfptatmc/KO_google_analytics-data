@@ -1,8 +1,7 @@
 import os
 import json
-import requests
 from google.oauth2 import service_account
-from google.analytics.data_v1beta import BetaAnalyticsDataClient
+from google.analytics.data import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
 
 # Property ID
@@ -11,7 +10,7 @@ PROPERTY_ID = "446474801"
 # Path to your service account key file
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
-# Initialize the Analytics Data API client
+# Initialize the Analytics Data API Client
 def initialize_analyticsdata():
     credentials_info = json.loads(KEY_FILE_CONTENT)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
@@ -42,7 +41,6 @@ def save_to_csv(response):
 def main():
     print(f"Using PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
-    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
     response = get_report(client)
     save_to_csv(response)
     print("Data fetched and saved to analytics_data.csv successfully.")
