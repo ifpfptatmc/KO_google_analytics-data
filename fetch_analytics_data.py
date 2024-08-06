@@ -1,7 +1,8 @@
 import os
 import json
+import requests
 from google.oauth2 import service_account
-from google.analytics.data import BetaAnalyticsDataClient
+from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
 
 # Property ID
@@ -35,15 +36,17 @@ def save_to_csv(response):
         for row in response.rows:
             date = row.dimension_values[0].value
             active_users = row.metric_values[0].value
-            file.write(f"{date},{active_users}\n")
+            file.write(f'{date},{active_users}\n')
+        print(f'Data written to analytics_data.csv: {response.rows}')
 
 # Main function
 def main():
     print(f"Using PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
+    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
     response = get_report(client)
+    print(f"API response: {response}")
     save_to_csv(response)
-    print("Data fetched and saved to analytics_data.csv successfully.")
 
 if __name__ == "__main__":
     main()
