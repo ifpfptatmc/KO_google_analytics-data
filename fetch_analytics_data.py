@@ -1,6 +1,5 @@
 import os
 import json
-import requests
 from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
@@ -47,9 +46,12 @@ def main():
     print(f"Using PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
     print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
-    response = get_report(client)
-    print(f"API response: {response}")
-    save_to_csv(response)
+    try:
+        response = get_report(client)
+        print(f"API response: {response}")
+        save_to_csv(response)
+    except Exception as e:
+        print(f"Error occurred: {e}")
     end_time = datetime.now()
     print(f"Script ended at: {end_time}")
     print(f"Total execution time: {end_time - start_time}")
