@@ -4,6 +4,7 @@ import requests
 from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
+from datetime import datetime
 
 # Property ID
 PROPERTY_ID = "446474801"
@@ -41,12 +42,17 @@ def save_to_csv(response):
 
 # Main function
 def main():
+    start_time = datetime.now()
+    print(f"Script started at: {start_time}")
     print(f"Using PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
     print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
     response = get_report(client)
     print(f"API response: {response}")
     save_to_csv(response)
+    end_time = datetime.now()
+    print(f"Script ended at: {end_time}")
+    print(f"Total execution time: {end_time - start_time}")
 
 if __name__ == "__main__":
     main()
