@@ -7,10 +7,10 @@ from google.analytics.data_v1beta.types import RunReportRequest
 import pandas as pd
 from datetime import datetime
 
-# Property ID
+# Идентификатор свойства
 PROPERTY_ID = "446474801"
 
-# Path to your service account key file
+# Путь к файлу ключа учетной записи службы
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
 def initialize_analyticsdata():
@@ -27,12 +27,7 @@ def get_report(client):
             {"name": "activeUsers"},
             {"name": "averageSessionDuration"},
             {"name": "bounceRate"},
-            {"name": "eventCount", "expression": "eventCount(slo_click_call)", "alias": "slo_click_call"},
-            {"name": "eventCount", "expression": "eventCount(slo_click_facebook)", "alias": "slo_click_facebook"},
-            {"name": "eventCount", "expression": "eventCount(slo_click_inst)", "alias": "slo_click_inst"},
-            {"name": "eventCount", "expression": "eventCount(slo_click_mail)", "alias": "slo_click_mail"},
-            {"name": "eventCount", "expression": "eventCount(slo_click_wa)", "alias": "slo_click_wa"},
-            {"name": "eventCount", "expression": "eventCount(slo_fill_any_form)", "alias": "slo_fill_any_form"}
+            {"name": "eventCount"}
         ],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
@@ -46,40 +41,27 @@ def save_to_csv(response):
         active_users = row.metric_values[0].value
         avg_session_duration = row.metric_values[1].value
         bounce_rate = row.metric_values[2].value
-        slo_click_call = row.metric_values[3].value
-        slo_click_facebook = row.metric_values[4].value
-        slo_click_inst = row.metric_values[5].value
-        slo_click_mail = row.metric_values[6].value
-        slo_click_wa = row.metric_values[7].value
-        slo_fill_any_form = row.metric_values[8].value
-        rows.append([
-            date, active_users, avg_session_duration, bounce_rate,
-            slo_click_call, slo_click_facebook, slo_click_inst,
-            slo_click_mail, slo_click_wa, slo_fill_any_form
-        ])
+        event_count = row.metric_values[3].value
+        rows.append([date, active_users, avg_session_duration, bounce_rate, event_count])
     
-    df = pd.DataFrame(rows, columns=[
-        "date", "activeUsers", "averageSessionDuration", "bounceRate",
-        "slo_click_call", "slo_click_facebook", "slo_click_inst",
-        "slo_click_mail", "slo_click_wa", "slo_fill_any_form"
-    ])
+    df = pd.DataFrame(rows, columns=["date", "activeUsers", "averageSessionDuration", "bounceRate", "eventCount"])
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date")
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     
-    # Add last updated time
+    # Добавить время последнего обновления
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    df.loc[len(df)] = ["Last updated", "", last_updated, "", "", "", "", "", "", ""]
+    df.loc[len(df)] = ["Last updated", "", last_updated, "", ""]
     
     df.to_csv('analytics_data.csv', index=False)
 
 def main():
-    print(f"Using PROPERTY_ID: {PROPERTY_ID}")
+    print(f"Используется PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
-    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
+    print(f"Используется KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (усечено для безопасности)")
     response = get_report(client)
     save_to_csv(response)
-    print("Data fetched and saved to analytics_data.csv successfully.")
+    print("Данные получены и сохранены в analytics_data.csv успешно.")
 
 if __name__ == "__main__":
     main()
