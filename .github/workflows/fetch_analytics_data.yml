@@ -6,21 +6,24 @@ on:
 jobs:
   fetch-data-slo:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.x'
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests google-analytics-data pandas google-auth
+        pip install requests google-analytics-data
+
     - name: Run fetch analytics data script for SLO
       run: python fetch_analytics_data_slo.py
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
     - name: Commit and push changes for SLO
       run: |
         git config --global user.name 'github-actions[bot]'
@@ -30,24 +33,28 @@ jobs:
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
 
   fetch-data-ru:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.x'
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests google-analytics-data pandas google-auth
+        pip install requests google-analytics-data
+
     - name: Run fetch analytics data script for RU
       run: python fetch_analytics_data_ru.py
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
     - name: Commit and push changes for RU
       run: |
         git config --global user.name 'github-actions[bot]'
@@ -57,24 +64,28 @@ jobs:
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
 
   fetch-data-en:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.x'
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests google-analytics-data pandas google-auth
+        pip install requests google-analytics-data
+
     - name: Run fetch analytics data script for EN
       run: python fetch_analytics_data_en.py
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
     - name: Commit and push changes for EN
       run: |
         git config --global user.name 'github-actions[bot]'
@@ -84,3 +95,4 @@ jobs:
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
