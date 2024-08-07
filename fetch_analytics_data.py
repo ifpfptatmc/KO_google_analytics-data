@@ -1,34 +1,26 @@
 import json
-import os
 import pandas as pd
-from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
-from google.analytics.data_v1beta.types import RunReportRequest
+from google.analytics.data_v1beta.types import DateRange, Dimension, Metric, RunReportRequest
+from google.oauth2 import service_account
 from datetime import datetime
+import os
 
-# Загрузка содержимого ключа из переменной окружения
-key_file_content = os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON')
+PROPERTY_ID = os.getenv("VIEW_ID")
+KEY_FILE_CONTENT = os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON')
 
-if not key_file_content:
-    raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON environment variable is missing")
+if not PROPERTY_ID or not KEY_FILE_CONTENT:
+    raise ValueError("Missing environment variables VIEW_ID or GOOGLE_SERVICE_ACCOUNT_JSON")
 
-credentials_info = json.loads(key_file_content)
-
-# Создание клиента для обращения к API
-def initialize_analyticsdata():
-    credentials = service_account.Credentials.from_service_account_info(credentials_info)
-    client = BetaAnalyticsDataClient(credentials=credentials)
-    return client
-
-PROPERTY_ID = os.getenv('VIEW_ID')
+credentials = service_account.Credentials.from_service_account_info(json.loads(KEY_FILE_CONTENT))
+client = BetaAnalyticsDataClient(credentials=credentials)
 
 def run_report(property_id, dimensions, metrics, date_ranges):
-    client = initialize_analyticsdata()
     request = RunReportRequest(
         property=f"properties/{property_id}",
         dimensions=dimensions,
         metrics=metrics,
-        date_ranges=date_ranges
+        date_ranges=date_ranges,
     )
     response = client.run_report(request)
     return response
@@ -38,7 +30,7 @@ response = run_report(
     dimensions=[{"name": "date"}],
     metrics=[
         {"name": "activeUsers"},
-        {"name": "averageSessionDuration"},
+        {"name": "avgSessionDuration"},
     ],
     date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}],
 )
