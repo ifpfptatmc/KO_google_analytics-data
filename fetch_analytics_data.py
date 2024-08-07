@@ -8,8 +8,6 @@ from datetime import datetime
 
 # Загрузка содержимого ключа из переменной окружения
 key_file_content = os.getenv('KEY_FILE_CONTENT')
-if not key_file_content:
-    raise ValueError("KEY_FILE_CONTENT environment variable is missing")
 
 credentials_info = json.loads(key_file_content)
 
@@ -19,7 +17,7 @@ def initialize_analyticsdata():
     client = BetaAnalyticsDataClient(credentials=credentials)
     return client
 
-PROPERTY_ID = os.getenv('PROPERTY_ID', '446474801')
+PROPERTY_ID = '446474801'
 
 def run_report(property_id, dimensions, metrics, date_ranges):
     client = initialize_analyticsdata()
