@@ -16,6 +16,7 @@ KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 if not KEY_FILE_CONTENT:
     raise ValueError("The environment variable GOOGLE_APPLICATION_CREDENTIALS is not set or empty")
 
+# Define custom events
 CUSTOM_EVENTS = [
     "slo_click_call",
     "slo_click_facebook",
