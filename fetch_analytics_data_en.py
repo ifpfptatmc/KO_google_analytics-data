@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
@@ -12,6 +13,10 @@ PROPERTY_ID = "446462077"
 # Path to your service account key file
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
+if not KEY_FILE_CONTENT:
+    raise ValueError("The environment variable GOOGLE_APPLICATION_CREDENTIALS is not set or empty")
+
+# Define custom events
 CUSTOM_EVENTS = [
     "en_click_call",
     "en_click_facebook",
