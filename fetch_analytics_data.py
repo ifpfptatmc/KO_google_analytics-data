@@ -13,16 +13,6 @@ PROPERTY_ID = "446474801"
 # Path to your service account key file
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
-# Custom events to fetch
-CUSTOM_EVENTS = [
-    "slo_click_call",
-    "slo_click_facebook",
-    "slo_click_inst",
-    "slo_click_mail",
-    "slo_click_wa",
-    "slo_fill_any_form"
-]
-
 def initialize_analyticsdata():
     credentials_info = json.loads(KEY_FILE_CONTENT)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
@@ -30,19 +20,20 @@ def initialize_analyticsdata():
     return client
 
 def get_report(client):
-    metrics = [
-        {"name": "activeUsers"},
-        {"name": "averageSessionDuration"},
-        {"name": "bounceRate"}
-    ]
-
-    for event in CUSTOM_EVENTS:
-        metrics.append({"name": "eventCount", "expression": f"eventCount({event})", "alias": event})
-
     request = RunReportRequest(
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
-        metrics=metrics,
+        metrics=[
+            {"name": "activeUsers"},
+            {"name": "averageSessionDuration"},
+            {"name": "bounceRate"},
+            {"name": "eventCount", "expression": "eventCount(slo_click_call)", "alias": "slo_click_call"},
+            {"name": "eventCount", "expression": "eventCount(slo_click_facebook)", "alias": "slo_click_facebook"},
+            {"name": "eventCount", "expression": "eventCount(slo_click_inst)", "alias": "slo_click_inst"},
+            {"name": "eventCount", "expression": "eventCount(slo_click_mail)", "alias": "slo_click_mail"},
+            {"name": "eventCount", "expression": "eventCount(slo_click_wa)", "alias": "slo_click_wa"},
+            {"name": "eventCount", "expression": "eventCount(slo_fill_any_form)", "alias": "slo_fill_any_form"}
+        ],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
     response = client.run_report(request)
@@ -51,24 +42,34 @@ def get_report(client):
 def save_to_csv(response):
     rows = []
     for row in response.rows:
-        data_row = {
-            "date": row.dimension_values[0].value,
-            "activeUsers": row.metric_values[0].value,
-            "averageSessionDuration": row.metric_values[1].value,
-            "bounceRate": row.metric_values[2].value
-        }
-        for i, event in enumerate(CUSTOM_EVENTS):
-            data_row[event] = row.metric_values[3 + i].value
-        rows.append(data_row)
+        date = row.dimension_values[0].value
+        active_users = row.metric_values[0].value
+        avg_session_duration = row.metric_values[1].value
+        bounce_rate = row.metric_values[2].value
+        slo_click_call = row.metric_values[3].value
+        slo_click_facebook = row.metric_values[4].value
+        slo_click_inst = row.metric_values[5].value
+        slo_click_mail = row.metric_values[6].value
+        slo_click_wa = row.metric_values[7].value
+        slo_fill_any_form = row.metric_values[8].value
+        rows.append([
+            date, active_users, avg_session_duration, bounce_rate,
+            slo_click_call, slo_click_facebook, slo_click_inst,
+            slo_click_mail, slo_click_wa, slo_fill_any_form
+        ])
     
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(rows, columns=[
+        "date", "activeUsers", "averageSessionDuration", "bounceRate",
+        "slo_click_call", "slo_click_facebook", "slo_click_inst",
+        "slo_click_mail", "slo_click_wa", "slo_fill_any_form"
+    ])
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date")
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     
     # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    df.loc[len(df)] = {"date": "Last updated", "activeUsers": "", "averageSessionDuration": last_updated, "bounceRate": "", **{event: "" for event in CUSTOM_EVENTS}}
+    df.loc[len(df)] = ["Last updated", "", last_updated, "", "", "", "", "", "", ""]
     
     df.to_csv('analytics_data.csv', index=False)
 
