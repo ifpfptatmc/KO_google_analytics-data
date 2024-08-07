@@ -6,93 +6,75 @@ on:
 jobs:
   fetch-data-slo:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests google-analytics-data
-
-    - name: Run fetch analytics data script for SLO
-      run: python fetch_analytics_data_slo.py
-
-    - name: Commit and push changes for SLO
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add analytics_data_slo.csv
-        git commit -m 'Updated SLO analytics data'
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests google-analytics-data pandas
+      - name: Run fetch analytics data script for SLO
+        run: python fetch_analytics_data_slo.py
+      - name: Commit and push changes for SLO
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add analytics_data_slo.csv
+          git commit -m 'Updated SLO analytics data'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   fetch-data-ru:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests google-analytics-data
-
-    - name: Run fetch analytics data script for RU
-      run: python fetch_analytics_data_ru.py
-
-    - name: Commit and push changes for RU
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add analytics_data_ru.csv
-        git commit -m 'Updated RU analytics data'
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests google-analytics-data pandas
+      - name: Run fetch analytics data script for RU
+        run: python fetch_analytics_data_ru.py
+      - name: Commit and push changes for RU
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add analytics_data_ru.csv
+          git commit -m 'Updated RU analytics data'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   fetch-data-en:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests google-analytics-data
-
-    - name: Run fetch analytics data script for EN
-      run: python fetch_analytics_data_en.py
-
-    - name: Commit and push changes for EN
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add analytics_data_en.csv
-        git commit -m 'Updated EN analytics data'
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests google-analytics-data pandas
+      - name: Run fetch analytics data script for EN
+        run: python fetch_analytics_data_en.py
+      - name: Commit and push changes for EN
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add analytics_data_en.csv
+          git commit -m 'Updated EN analytics data'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
