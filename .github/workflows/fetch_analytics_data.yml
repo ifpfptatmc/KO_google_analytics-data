@@ -24,8 +24,8 @@ jobs:
     - name: Run fetch analytics data script
       run: python fetch_analytics_data.py
       env:
-        KEY_FILE_CONTENT: ${{ secrets.KEY_FILE_CONTENT }}
-        PROPERTY_ID: '446474801'
+        GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        VIEW_ID: ${{ secrets.VIEW_ID }}
 
     - name: List files for debugging
       run: ls -la
