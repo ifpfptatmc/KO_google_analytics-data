@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
@@ -31,11 +32,7 @@ def get_report(client):
     request = RunReportRequest(
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
-        metrics=[
-            {"name": "activeUsers"}, 
-            {"name": "averageSessionDuration"}, 
-            {"name": "bounceRate"}
-        ],
+        metrics=[{"name": "activeUsers"}, {"name": "averageSessionDuration"}, {"name": "bounceRate"}],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
     response = client.run_report(request)
@@ -86,7 +83,7 @@ def save_to_csv(response, event_responses):
     
     # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    df.loc[len(df)] = {"date": "Last updated", "activeUsers": "", "averageSessionDuration": last_updated, "bounceRate": "", **{event: "" for event in CUSTOM_EVENTS}}
+    df.loc[len(df)] = {"date": "Last updated", "activeUsers": "", "averageSessionDuration": last_updated, "bounceRate": "", "eventCount": ""}
     
     df.to_csv('analytics_data_slo.csv', index=False)
 
