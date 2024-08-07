@@ -1,8 +1,6 @@
 import os
 import json
-import datetime
 import pandas as pd
-from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
 
@@ -24,10 +22,7 @@ def get_report(client):
     request = RunReportRequest(
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
-        metrics=[
-            {"name": "activeUsers"},
-            {"name": "averageSessionDuration"}  # Добавляем показатель "средняя продолжительность сеанса"
-        ],
+        metrics=[{"name": "activeUsers"}, {"name": "averageSessionDuration"}],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
     response = client.run_report(request)
@@ -37,25 +32,15 @@ def get_report(client):
 def save_to_csv(response):
     data = []
     for row in response.rows:
-        date = datetime.datetime.strptime(row.dimension_values[0].value, '%Y%m%d').strftime('%Y-%m-%d')
+        date = row.dimension_values[0].value
         active_users = row.metric_values[0].value
-        avg_session_duration = row.metric_values[1].value  # Получаем значение "средняя продолжительность сеанса"
+        avg_session_duration = row.metric_values[1].value
         data.append([date, active_users, avg_session_duration])
-    
-    # Sort data by date
-    data.sort()
 
-    # Create a DataFrame and save to CSV
-    df = pd.DataFrame(data, columns=['date', 'activeUsers', 'averageSessionDuration'])
+    df = pd.DataFrame(data, columns=["date", "activeUsers", "averageSessionDuration"])
     df['date'] = pd.to_datetime(df['date'])
     df = df.sort_values(by='date')
-    
-    with open('analytics_data.csv', 'w') as file:
-        df.to_csv(file, index=False)
-        
-        # Add the last updated line
-        last_updated = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        file.write(f'Last updated,{last_updated}\n')
+    df.to_csv('analytics_data.csv', index=False)
 
 # Main function
 def main():
