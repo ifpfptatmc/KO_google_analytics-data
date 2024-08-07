@@ -1,16 +1,17 @@
 import os
 import json
-import pandas as pd
+import requests
+from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
-from google.oauth2 import service_account
+import pandas as pd
 from datetime import datetime
 
 # Property ID
 PROPERTY_ID = "446474801"
 
 # Path to your service account key file
-KEY_FILE_CONTENT = os.getenv('KEY_FILE_CONTENT')
+KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
 def initialize_analyticsdata():
     credentials_info = json.loads(KEY_FILE_CONTENT)
@@ -26,7 +27,6 @@ def get_report(client):
             {"name": "activeUsers"},
             {"name": "averageSessionDuration"},
             {"name": "bounceRate"},
-            {"name": "eventCount", "expression": "eventCount", "custom_aggregation_type": "eventCount"}
         ],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
@@ -40,17 +40,16 @@ def save_to_csv(response):
         active_users = row.metric_values[0].value
         avg_session_duration = row.metric_values[1].value
         bounce_rate = row.metric_values[2].value
-        event_count = row.metric_values[3].value
-        rows.append([date, active_users, avg_session_duration, bounce_rate, event_count])
+        rows.append([date, active_users, avg_session_duration, bounce_rate])
     
-    df = pd.DataFrame(rows, columns=["date", "activeUsers", "averageSessionDuration", "bounceRate", "eventCount"])
+    df = pd.DataFrame(rows, columns=["date", "activeUsers", "averageSessionDuration", "bounceRate"])
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date")
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     
     # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    df.loc[len(df)] = ["Last updated", "", last_updated, "", ""]
+    df.loc[len(df)] = ["Last updated", "", "", last_updated]
     
     df.to_csv('analytics_data.csv', index=False)
 
