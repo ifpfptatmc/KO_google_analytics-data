@@ -44,7 +44,7 @@ def save_to_csv(response):
     
     # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    df = df.append({"date": "Last updated", "activeUsers": "", "averageSessionDuration": last_updated}, ignore_index=True)
+    df.loc[len(df)] = ["Last updated", "", last_updated]
     
     df.to_csv('analytics_data.csv', index=False)
 
