@@ -1,6 +1,7 @@
 import os
 import json
 import csv
+import requests
 from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
