@@ -7,7 +7,10 @@ from google.analytics.data_v1beta.types import RunReportRequest
 from datetime import datetime
 
 # Загрузка содержимого ключа из переменной окружения
-key_file_content = os.getenv('KEY_FILE_CONTENT')
+key_file_content = os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON')
+
+if not key_file_content:
+    raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON environment variable is missing")
 
 credentials_info = json.loads(key_file_content)
 
@@ -17,7 +20,7 @@ def initialize_analyticsdata():
     client = BetaAnalyticsDataClient(credentials=credentials)
     return client
 
-PROPERTY_ID = '446474801'
+PROPERTY_ID = os.getenv('VIEW_ID')
 
 def run_report(property_id, dimensions, metrics, date_ranges):
     client = initialize_analyticsdata()
