@@ -85,7 +85,7 @@ def save_to_csv(response, event_responses):
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     df.loc[len(df)] = {"date": "Last updated", "activeUsers": "", "averageSessionDuration": last_updated, "bounceRate": "", "eventCount": ""}
     
-    df.to_csv('analytics_data.csv', index=False)
+    df.to_csv('analytics_data_slo.csv', index=False)
 
 def main():
     print(f"Using PROPERTY_ID: {PROPERTY_ID}")
@@ -96,7 +96,7 @@ def main():
     event_responses = {event_name: get_event_report(client, event_name) for event_name in CUSTOM_EVENTS}
     
     save_to_csv(response, event_responses)
-    print("Data fetched and saved to analytics_data.csv successfully.")
+    print("Data fetched and saved to analytics_data_slo.csv successfully.")
 
 if __name__ == "__main__":
     main()
