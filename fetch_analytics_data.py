@@ -13,16 +13,6 @@ PROPERTY_ID = "446474801"
 # Path to your service account key file
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
-# List of custom event names
-CUSTOM_EVENTS = [
-    "slo_click_call",
-    "slo_click_facebook",
-    "slo_click_inst",
-    "slo_click_mail",
-    "slo_click_wa",
-    "slo_fill_any_form"
-]
-
 def initialize_analyticsdata():
     credentials_info = json.loads(KEY_FILE_CONTENT)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
@@ -30,12 +20,24 @@ def initialize_analyticsdata():
     return client
 
 def get_report(client):
-    metrics = [{"name": "activeUsers"}, {"name": "averageSessionDuration"}, {"name": "bounceRate"}]
-    
-    # Add custom events to the metrics list
-    for event in CUSTOM_EVENTS:
-        metrics.append({"name": "eventCount", "expression": f"eventName == '{event}'"})
-    
+    metrics = [
+        {"name": "activeUsers"},
+        {"name": "averageSessionDuration"},
+        {"name": "bounceRate"}
+    ]
+
+    custom_events = [
+        "slo_click_call", 
+        "slo_click_facebook", 
+        "slo_click_inst", 
+        "slo_click_mail", 
+        "slo_click_wa", 
+        "slo_fill_any_form"
+    ]
+
+    for event in custom_events:
+        metrics.append({"name": "eventCount", "expression": f"eventCount/{event}"})
+
     request = RunReportRequest(
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
@@ -48,28 +50,22 @@ def get_report(client):
 def save_to_csv(response):
     rows = []
     for row in response.rows:
-        data_row = {
-            "date": row.dimension_values[0].value,
-            "activeUsers": row.metric_values[0].value,
-            "averageSessionDuration": row.metric_values[1].value,
-            "bounceRate": row.metric_values[2].value,
-        }
-        for i, event in enumerate(CUSTOM_EVENTS):
-            data_row[event] = row.metric_values[3 + i].value
-        
-        rows.append(data_row)
+        date = row.dimension_values[0].value
+        active_users = row.metric_values[0].value
+        avg_session_duration = row.metric_values[1].value
+        bounce_rate = row.metric_values[2].value
+        custom_event_counts = [row.metric_values[i].value for i in range(3, 3 + len(custom_events))]
+        rows.append([date, active_users, avg_session_duration, bounce_rate] + custom_event_counts)
     
-    df = pd.DataFrame(rows)
+    columns = ["date", "activeUsers", "averageSessionDuration", "bounceRate"] + custom_events
+    df = pd.DataFrame(rows, columns=columns)
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date")
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     
     # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    last_row = {key: "" for key in df.columns}
-    last_row["date"] = "Last updated"
-    last_row["averageSessionDuration"] = last_updated
-    df = df.append(last_row, ignore_index=True)
+    df.loc[len(df)] = ["Last updated"] + [""] * (len(columns) - 1) + [last_updated]
     
     df.to_csv('analytics_data.csv', index=False)
 
