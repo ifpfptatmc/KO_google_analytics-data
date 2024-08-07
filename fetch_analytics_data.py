@@ -23,7 +23,11 @@ def get_report(client):
     request = RunReportRequest(
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
-        metrics=[{"name": "activeUsers"}, {"name": "averageSessionDuration"}],
+        metrics=[
+            {"name": "activeUsers"},
+            {"name": "averageSessionDuration"},
+            {"name": "bounceRate"}
+        ],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
     response = client.run_report(request)
@@ -35,16 +39,17 @@ def save_to_csv(response):
         date = row.dimension_values[0].value
         active_users = row.metric_values[0].value
         avg_session_duration = row.metric_values[1].value
-        rows.append([date, active_users, avg_session_duration])
+        bounce_rate = row.metric_values[2].value
+        rows.append([date, active_users, avg_session_duration, bounce_rate])
     
-    df = pd.DataFrame(rows, columns=["date", "activeUsers", "averageSessionDuration"])
+    df = pd.DataFrame(rows, columns=["date", "activeUsers", "averageSessionDuration", "bounceRate"])
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date")
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     
     # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    df.loc[len(df)] = ["Last updated", "", last_updated]
+    df.loc[len(df)] = ["Last updated", "", "", last_updated]
     
     df.to_csv('analytics_data.csv', index=False)
 
