@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  fetch-data-slo:
+  fetch-data:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,6 +32,22 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add analytics_data_slo.csv
         git commit -m 'Updated SLO analytics data'
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
+
+    - name: Run fetch analytics data script for RU
+      run: python fetch_analytics_data_ru.py
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+    - name: Commit and push changes for RU
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add analytics_data_ru.csv
+        git commit -m 'Updated RU analytics data'
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
