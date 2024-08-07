@@ -31,11 +31,18 @@ def get_report(client):
 
 # Save the report data to a CSV file
 def save_to_csv(response):
+    data = []
+    for row in response.rows:
+        date = datetime.datetime.strptime(row.dimension_values[0].value, '%Y%m%d').strftime('%Y-%m-%d')
+        active_users = row.metric_values[0].value
+        data.append((date, active_users))
+    
+    # Sort data by date
+    data.sort()
+
     with open('analytics_data.csv', 'w') as file:
         file.write('date,activeUsers\n')
-        for row in response.rows:
-            date = datetime.datetime.strptime(row.dimension_values[0].value, '%Y%m%d').strftime('%Y-%m-%d')
-            active_users = row.metric_values[0].value
+        for date, active_users in data:
             file.write(f'{date},{active_users}\n')
         
         # Add the last updated line
