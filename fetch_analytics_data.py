@@ -23,7 +23,10 @@ def get_report(client):
     request = RunReportRequest(
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
-        metrics=[{"name": "activeUsers"}],
+        metrics=[
+            {"name": "activeUsers"},
+            {"name": "averageSessionDuration"}  # Добавляем показатель "средняя продолжительность сеанса"
+        ],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
     response = client.run_report(request)
@@ -35,15 +38,16 @@ def save_to_csv(response):
     for row in response.rows:
         date = datetime.datetime.strptime(row.dimension_values[0].value, '%Y%m%d').strftime('%Y-%m-%d')
         active_users = row.metric_values[0].value
-        data.append((date, active_users))
+        avg_session_duration = row.metric_values[1].value  # Получаем значение "средняя продолжительность сеанса"
+        data.append((date, active_users, avg_session_duration))
     
     # Sort data by date
     data.sort()
 
     with open('analytics_data.csv', 'w') as file:
-        file.write('date,activeUsers\n')
-        for date, active_users in data:
-            file.write(f'{date},{active_users}\n')
+        file.write('date,activeUsers,averageSessionDuration\n')
+        for date, active_users, avg_session_duration in data:
+            file.write(f'{date},{active_users},{avg_session_duration}\n')
         
         # Add the last updated line
         last_updated = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
