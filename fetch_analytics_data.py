@@ -5,7 +5,7 @@ from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
 
 # Property ID
-PROPERTY_ID = "YOUR_PROPERTY_ID"
+PROPERTY_ID = "446474801"
 
 # Path to your service account key file
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
@@ -23,7 +23,7 @@ def get_report(client):
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
         metrics=[{"name": "activeUsers"}],
-        date_ranges=[{"start_date": "2023-01-01", "end_date": "2024-07-31"}]
+        date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
     response = client.run_report(request)
     return response
@@ -41,7 +41,6 @@ def save_to_csv(response):
 def main():
     print(f"Using PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
-    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
     response = get_report(client)
     save_to_csv(response)
     print("Data fetched and saved to analytics_data.csv successfully.")
