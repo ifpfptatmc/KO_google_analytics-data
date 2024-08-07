@@ -1,7 +1,5 @@
 import os
 import json
-import csv
-import requests
 from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
@@ -39,6 +37,7 @@ def save_to_csv(response):
             date = row.dimension_values[0].value
             active_users = row.metric_values[0].value
             file.write(f'{date},{active_users}\n')
+            print(f'Writing row to CSV: {date}, {active_users}')
         print(f'Data written to analytics_data.csv: {response.rows}')
 
 # Main function
