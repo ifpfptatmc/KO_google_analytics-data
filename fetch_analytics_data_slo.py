@@ -13,6 +13,9 @@ PROPERTY_ID = "446474801"
 # Path to your service account key file
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
+if not KEY_FILE_CONTENT:
+    raise ValueError("The environment variable GOOGLE_APPLICATION_CREDENTIALS is not set or empty")
+
 CUSTOM_EVENTS = [
     "slo_click_call",
     "slo_click_facebook",
