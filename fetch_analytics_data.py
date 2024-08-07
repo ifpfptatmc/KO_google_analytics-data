@@ -10,7 +10,7 @@ from datetime import datetime
 # Property ID
 PROPERTY_ID = "446474801"
 
-# Path to your service account key file
+# Содержимое файла ключа сервиса
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
 def initialize_analyticsdata():
@@ -27,8 +27,18 @@ def get_report(client):
             {"name": "activeUsers"},
             {"name": "averageSessionDuration"},
             {"name": "bounceRate"},
+            {"name": "eventCount"}
         ],
-        date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
+        date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}],
+        dimension_filter={
+            "filter": {
+                "field_name": "eventName",
+                "string_filter": {
+                    "value": "slo_click_call,slo_click_facebook,slo_click_inst,slo_click_mail,slo_click_wa,slo_fill_any_form",
+                    "match_type": "EXACT"
+                }
+            }
+        }
     )
     response = client.run_report(request)
     return response
@@ -40,16 +50,17 @@ def save_to_csv(response):
         active_users = row.metric_values[0].value
         avg_session_duration = row.metric_values[1].value
         bounce_rate = row.metric_values[2].value
-        rows.append([date, active_users, avg_session_duration, bounce_rate])
+        event_count = row.metric_values[3].value
+        rows.append([date, active_users, avg_session_duration, bounce_rate, event_count])
     
-    df = pd.DataFrame(rows, columns=["date", "activeUsers", "averageSessionDuration", "bounceRate"])
+    df = pd.DataFrame(rows, columns=["date", "activeUsers", "averageSessionDuration", "bounceRate", "eventCount"])
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date")
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     
-    # Add last updated time
+    # Добавить время последнего обновления
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    df.loc[len(df)] = ["Last updated", "", "", last_updated]
+    df.loc[len(df)] = ["Last updated", "", last_updated, "", ""]
     
     df.to_csv('analytics_data.csv', index=False)
 
