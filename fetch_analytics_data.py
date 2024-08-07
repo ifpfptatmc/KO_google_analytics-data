@@ -1,17 +1,16 @@
 import os
 import json
-import requests
-from google.oauth2 import service_account
+import pandas as pd
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
-import pandas as pd
+from google.oauth2 import service_account
 from datetime import datetime
 
-# Идентификатор свойства
+# Property ID
 PROPERTY_ID = "446474801"
 
-# Путь к файлу ключа учетной записи службы
-KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+# Path to your service account key file
+KEY_FILE_CONTENT = os.getenv('KEY_FILE_CONTENT')
 
 def initialize_analyticsdata():
     credentials_info = json.loads(KEY_FILE_CONTENT)
@@ -27,7 +26,7 @@ def get_report(client):
             {"name": "activeUsers"},
             {"name": "averageSessionDuration"},
             {"name": "bounceRate"},
-            {"name": "eventCount"}
+            {"name": "eventCount", "expression": "eventCount", "custom_aggregation_type": "eventCount"}
         ],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
@@ -49,19 +48,19 @@ def save_to_csv(response):
     df = df.sort_values("date")
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     
-    # Добавить время последнего обновления
+    # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     df.loc[len(df)] = ["Last updated", "", last_updated, "", ""]
     
     df.to_csv('analytics_data.csv', index=False)
 
 def main():
-    print(f"Используется PROPERTY_ID: {PROPERTY_ID}")
+    print(f"Using PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
-    print(f"Используется KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (усечено для безопасности)")
+    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
     response = get_report(client)
     save_to_csv(response)
-    print("Данные получены и сохранены в analytics_data.csv успешно.")
+    print("Data fetched and saved to analytics_data.csv successfully.")
 
 if __name__ == "__main__":
     main()
