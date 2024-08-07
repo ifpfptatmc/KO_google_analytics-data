@@ -46,4 +46,60 @@ def get_event_report(client, event_name):
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
         metrics=[{"name": "eventCount"}],
-        date_ranges
+        date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}],
+        dimension_filter={
+            "filter": {
+                "field_name": "eventName",
+                "string_filter": {
+                    "match_type": "EXACT",
+                    "value": event_name
+                }
+            }
+        }
+    )
+    response = client.run_report(request)
+    return response
+
+def save_to_csv(response, event_responses):
+    rows = []
+    for row in response.rows:
+        date = row.dimension_values[0].value
+        active_users = row.metric_values[0].value
+        avg_session_duration = row.metric_values[1].value
+        bounce_rate = row.metric_values[2].value
+        row_data = {
+            "date": date,
+            "activeUsers": active_users,
+            "averageSessionDuration": avg_session_duration,
+            "bounceRate": bounce_rate
+        }
+        for event_name, event_response in event_responses.items():
+            for event_row in event_response.rows:
+                if event_row.dimension_values[0].value == date:
+                    row_data[event_name] = event_row.metric_values[0].value
+        rows.append(row_data)
+    
+    df = pd.DataFrame(rows)
+    df["date"] = pd.to_datetime(df["date"])
+    df = df.sort_values("date")
+    df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+    
+    # Add last updated time
+    last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    df.loc[len(df)] = {"date": "Last updated", "activeUsers": "", "averageSessionDuration": last_updated, "bounceRate": "", **{event: "" for event in CUSTOM_EVENTS}}
+    
+    df.to_csv('analytics_data_en.csv', index=False)
+
+def main():
+    print(f"Using PROPERTY_ID: {PROPERTY_ID}")
+    client = initialize_analyticsdata()
+    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
+    response = get_report(client)
+    
+    event_responses = {event_name: get_event_report(client, event_name) for event_name in CUSTOM_EVENTS}
+    
+    save_to_csv(response, event_responses)
+    print("Data fetched and saved to analytics_data_en.csv successfully.")
+
+if __name__ == "__main__":
+    main()
