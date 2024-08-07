@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
@@ -9,7 +10,9 @@ from datetime import datetime
 # Property ID
 PROPERTY_ID = "446474801"
 
-# Custom events
+# Path to your service account key file
+KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+
 CUSTOM_EVENTS = [
     "slo_click_call",
     "slo_click_facebook",
@@ -19,11 +22,9 @@ CUSTOM_EVENTS = [
     "slo_fill_any_form"
 ]
 
-# Path to your service account key file
-KEY_FILE_PATH = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-
 def initialize_analyticsdata():
-    credentials = service_account.Credentials.from_service_account_file(KEY_FILE_PATH)
+    credentials_info = json.loads(KEY_FILE_CONTENT)
+    credentials = service_account.Credentials.from_service_account_info(credentials_info)
     client = BetaAnalyticsDataClient(credentials=credentials)
     return client
 
@@ -87,7 +88,9 @@ def save_to_csv(response, event_responses):
     df.to_csv('analytics_data_slo.csv', index=False)
 
 def main():
+    print(f"Using PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
+    print(f"Using KEY_FILE_CONTENT: {KEY_FILE_CONTENT[:10]}... (truncated for security)")
     response = get_report(client)
     
     event_responses = {event_name: get_event_report(client, event_name) for event_name in CUSTOM_EVENTS}
