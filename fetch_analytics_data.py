@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+import pandas as pd
 from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
@@ -39,15 +40,18 @@ def save_to_csv(response):
         date = datetime.datetime.strptime(row.dimension_values[0].value, '%Y%m%d').strftime('%Y-%m-%d')
         active_users = row.metric_values[0].value
         avg_session_duration = row.metric_values[1].value  # Получаем значение "средняя продолжительность сеанса"
-        data.append((date, active_users, avg_session_duration))
+        data.append([date, active_users, avg_session_duration])
     
     # Sort data by date
     data.sort()
 
+    # Create a DataFrame and save to CSV
+    df = pd.DataFrame(data, columns=['date', 'activeUsers', 'averageSessionDuration'])
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.sort_values(by='date')
+    
     with open('analytics_data.csv', 'w') as file:
-        file.write('date,activeUsers,averageSessionDuration\n')
-        for date, active_users, avg_session_duration in data:
-            file.write(f'{date},{active_users},{avg_session_duration}\n')
+        df.to_csv(file, index=False)
         
         # Add the last updated line
         last_updated = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
