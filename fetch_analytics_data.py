@@ -23,7 +23,7 @@ def get_report(client):
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
         metrics=[{"name": "activeUsers"}],
-        date_ranges=[{"start_date": "2023-01-01", "end_date": "2023-12-31"}]
+        date_ranges=[{"start_date": "2023-01-01", "end_date": "2024-07-31"}]
     )
     response = client.run_report(request)
     return response
