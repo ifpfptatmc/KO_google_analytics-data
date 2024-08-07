@@ -5,17 +5,19 @@ from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
 
 # Property ID
-PROPERTY_ID = "446474801"
+PROPERTY_ID = "YOUR_PROPERTY_ID"
 
 # Path to your service account key file
 KEY_FILE_CONTENT = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
+# Initialize the Analytics Data API Client
 def initialize_analyticsdata():
     credentials_info = json.loads(KEY_FILE_CONTENT)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
     client = BetaAnalyticsDataClient(credentials=credentials)
     return client
 
+# Get a report from the Analytics Data API
 def get_report(client):
     request = RunReportRequest(
         property=f"properties/{PROPERTY_ID}",
@@ -26,6 +28,7 @@ def get_report(client):
     response = client.run_report(request)
     return response
 
+# Save the report data to a CSV file
 def save_to_csv(response):
     with open('analytics_data.csv', 'w') as file:
         file.write('date,activeUsers\n')
@@ -34,6 +37,7 @@ def save_to_csv(response):
             active_users = row.metric_values[0].value
             file.write(f'{date},{active_users}\n')
 
+# Main function
 def main():
     print(f"Using PROPERTY_ID: {PROPERTY_ID}")
     client = initialize_analyticsdata()
