@@ -66,8 +66,8 @@ def save_to_csv(response, event_responses):
     for row in response.rows:
         date = row.dimension_values[0].value
         new_users = row.metric_values[0].value
-        avg_session_duration = float(row.metric_values[1].value)  # Преобразование в десятичное число
-        bounce_rate = float(row.metric_values[2].value)  # Преобразование в десятичное число
+        avg_session_duration = float(row.metric_values[1].value)
+        bounce_rate = float(row.metric_values[2].value)
         row_data = {
             "date": date,
             "newUsers": new_users,
