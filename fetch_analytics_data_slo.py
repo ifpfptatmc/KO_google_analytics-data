@@ -84,6 +84,10 @@ def save_to_csv(response, event_responses):
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date")
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+
+        # Преобразуем столбцы averageSessionDuration и bounceRate в числовой формат
+    df["averageSessionDuration"] = pd.to_numeric(df["averageSessionDuration"], errors='coerce')
+    df["bounceRate"] = pd.to_numeric(df["bounceRate"], errors='coerce')
     
     # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
