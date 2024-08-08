@@ -77,7 +77,7 @@ def save_to_csv(response, event_responses):
         for event_name, event_response in event_responses.items():
             for event_row in event_response.rows:
                 if event_row.dimension_values[0].value == date:
-                    row_data[event_name] = event_row.metric_values[0].value
+                    row_data[event_name] = float(event_row.metric_values[0].value)
         rows.append(row_data)
     
     df = pd.DataFrame(rows)
