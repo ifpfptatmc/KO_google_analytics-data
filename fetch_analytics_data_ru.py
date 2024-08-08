@@ -36,7 +36,7 @@ def get_report(client):
     request = RunReportRequest(
         property=f"properties/{PROPERTY_ID}",
         dimensions=[{"name": "date"}],
-        metrics=[{"name": "activeUsers"}, {"name": "averageSessionDuration"}, {"name": "bounceRate"}],
+        metrics=[{"name": "newUsers"}, {"name": "averageSessionDuration"}, {"name": "bounceRate"}],
         date_ranges=[{"start_date": "2024-01-01", "end_date": "2024-12-31"}]
     )
     response = client.run_report(request)
@@ -65,12 +65,12 @@ def save_to_csv(response, event_responses):
     rows = []
     for row in response.rows:
         date = row.dimension_values[0].value
-        active_users = row.metric_values[0].value
+        new_users = row.metric_values[0].value
         avg_session_duration = row.metric_values[1].value
         bounce_rate = row.metric_values[2].value
         row_data = {
             "date": date,
-            "activeUsers": active_users,
+            "newUsers": new_users,
             "averageSessionDuration": avg_session_duration,
             "bounceRate": bounce_rate
         }
@@ -87,7 +87,7 @@ def save_to_csv(response, event_responses):
     
     # Add last updated time
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    df.loc[len(df)] = {"date": "Last updated", "activeUsers": "", "averageSessionDuration": last_updated, "bounceRate": "", "eventCount": ""}
+    df.loc[len(df)] = {"date": "Last updated", "newUsers": "", "averageSessionDuration": last_updated, "bounceRate": "", "eventCount": ""}
     
     df.to_csv('analytics_data_ru.csv', index=False)
 
