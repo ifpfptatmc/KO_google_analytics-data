@@ -23,7 +23,8 @@ CUSTOM_EVENTS = [
     "en_click_inst",
     "en_click_mail",
     "en_click_wa",
-    "en_fill_any_form"
+    "en_fill_any_form",
+    "en_click_viber"
 ]
 
 def initialize_analyticsdata():
