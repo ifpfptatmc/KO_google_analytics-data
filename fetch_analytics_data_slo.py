@@ -23,7 +23,8 @@ CUSTOM_EVENTS = [
     "slo_click_inst",
     "slo_click_mail",
     "slo_click_wa",
-    "slo_fill_any_form"
+    "slo_fill_any_form",
+    "slo_click_viber"
 ]
 
 def initialize_analyticsdata():
