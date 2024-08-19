@@ -2,6 +2,8 @@ name: Fetch and Update Analytics Data
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '30 8 * * *'  # 10:30 по времени Словении (GMT+2), что соответствует 08:30 по UTC
 
 jobs:
   fetch-data:
