@@ -20,7 +20,6 @@ if not KEY_FILE_CONTENT:
 CUSTOM_EVENTS = [
     "ru_click_call",
     "ru_click_facebook",
-    "ru_click_inst",
     "ru_click_mail",
     "ru_click_wa",
     "ru_fill_any_form",
